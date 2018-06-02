@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Test script for debugging gpio interface on e.g. raspberry pir
 
 print('starting script')
 import time
