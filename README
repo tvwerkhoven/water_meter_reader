@@ -1,0 +1,55 @@
+# Analog water meter reading with line sensor on Raspberry Pi
+
+## Hardware
+
+- Water sensor (any model with a rotating disk with different infrared reflection should do)
+- Raspberry Pi Zero W with pre-soldered GPIO pins (any RPi will do)
+- Line sensor (at least with digital out, prefereably also analog out to ease debugging. Working on 3.3V or 5.0V, I used https://www.hackerstore.nl/Artikel/26)
+- Jumper cables to connect to RPi (easier than soldering)
+- Adruino or oscilloscope (optional but recommended to ease electronic debugging)
+- Some metal/wood/putty/screws for sensor mounting
+
+## Install
+
+### Arduinoscope 
+
+If you have an arduino: get arduinoscope working http://www.instructables.com/id/Another-Arduino-Oscilloscope/
+
+### Debug with oscilloscope
+
+Connect line sensor to oscilloscope, then try to find the best orientation to detect the contrast in reflection. For me this was under a ±45 degree angle with the plastic window of the water meter, I got a contrast of ±0.5V to ±2.5V.
+
+### Calibration
+
+Once you are comfortable you know how the sensor works, mount it. Optionally use the potentiometer to adjust the digital out threshold. This should ideally be in the midpoint of the min and max voltage. For me this was at ±1.5V ((2.5+5)/2).
+
+## Software
+
+### Set up domoticz
+
+# Create dummy hardware, note idx
+# Create virtual water sensor, using JSON
+## curl --insecure "https://127.0.0.1:10443/json.htm?type=createvirtualsensor&idx=<dummy hardware idx>&sensorname=Water&sensortype=113"
+## curl --insecure "https://127.0.0.1:10443/json.htm?type=setused&idx=<id of sensor just created>&name=RFXMeter&switchtype=2&used=true"
+# Edit name of virtual sensor via web interface
+# Update RFX division to 1000 for water in Domoticz setting (if you're updating per liter)
+# Test updating
+## curl --insecure "https://127.0.0.1:10443/json.htm?type=command&param=udevice&idx=24&svalue=1"
+
+### Add script
+
+See 
+
+### Run at startup
+
+Add 
+ @reboot /home/pi/meter_water/water_worker.py
+to crontab
+
+## Reference
+
+- https://www.domoticz.com/forum/viewtopic.php?f=28&t=17123&p=139918&hilit=water+meter#p139918
+- https://www.raspberrypi.org/documentation/usage/gpio/
+- https://www.domoticz.com/wiki/Python_-_Read-out_of_DDS238_kWh-meter_and_upload_to_Domoticz_and_to_PVOutput#Creating_the_Shell_script_used_in_cron
+- https://gpiozero.readthedocs.io/en/stable/api_input.html#line-sensor-trct5000
+- http://www.instructables.com/id/Another-Arduino-Oscilloscope/
