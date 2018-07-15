@@ -52,7 +52,11 @@ import requests
 def domoticz_update(count):
 	# Todo: make value formatting dynamic based on meter settings
 	req_url = "{}://{}:{}/json.htm?type=command&param=udevice&idx={}&svalue={}".format(domoticz_protocol, domoticz_ip, domoticz_port, domoticz_water_idx, count)
-	httpresponse = requests.get(req_url, verify=False)
+	# Set timeout, otherwise it will hang forever
+	try:
+		httpresponse = requests.get(req_url, verify=False, timeout=5)
+	except requests.exceptions.Timeout as e:
+		logging.warn("Update failed due to timeout. Is domoticz running?")
 
 # These functions will be called when there is a line / no line detected.
 # N.B. That 'line' or 'no line' means low or high reflection here.
@@ -85,7 +89,7 @@ def domoticz_init(ip, port, meter_idx, prot="http"):
 	# 10*10 seconds (±2 minutes) to start
 	for i in range(10):
 		try:
-			resp = requests.get(req_url, verify=False)
+			resp = requests.get(req_url, verify=False, timeout=5)
 			break
 		except:
 			logging.warn("Could not get current meter reading. Will retry in 10sec. ({}/{})".format(i, 10))
