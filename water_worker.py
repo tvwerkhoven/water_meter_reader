@@ -28,8 +28,8 @@ domoticz_ip = "127.0.0.1"		# IP of domoticz server (127.0.0.1 for localhost = sa
 domoticz_protocol = "https"		# Protocol to use (http or https)
 domoticz_port = 10443			# Webserver port of domoticz (either http or https)
 
-meter_logf = '/home/pi/meter_water/water_worker.log' # log file
-meter_delay = 0.5				# Minimum delay between counts in seconds 
+meter_logf = '/tmp/water_worker.log' # log file, or None for no logging to disk
+meter_delay = 0.1				# Minimum delay between counts in seconds 
 								# (low-pass filter for potential sensor 
 								# noise)
 meter_lastupdate = 0		   	# Time at which meter was last updated
