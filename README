@@ -2,11 +2,11 @@
 
 ## Hardware
 
-- Water sensor (any model with a rotating disk with different infrared reflection should do)
-- Raspberry Pi Zero W with pre-soldered GPIO pins (any RPi will do)
+- Water meter (any model with a rotating disk with different infrared reflection should do). I have a Sensus 520/620 meter
+- Raspberry Pi with pre-soldered GPIO pins (any RPi will do, I tested on RPi0W and RPi3B+)
 - Line sensor (at least with digital out, prefereably also analog out to ease debugging. Working on 3.3V or 5.0V, I used https://www.hackerstore.nl/Artikel/26)
 - Jumper cables to connect to RPi (easier than soldering)
-- Adruino or oscilloscope (optional but recommended to ease electronic debugging)
+- Arduino or oscilloscope (optional but recommended to ease electronic debugging)
 - Some metal/wood/putty/screws for sensor mounting
 
 ## Install
