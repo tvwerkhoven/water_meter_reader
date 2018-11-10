@@ -25,6 +25,14 @@ Once you are comfortable you know how the sensor works, mount it. Optionally use
 
 ## Software
 
+### Pre-requisites
+
+Install python3-gpiozero
+
+### Test libraries
+
+Run ./read_ldr.py
+
 ### Set up domoticz
 
 # Create dummy hardware, note idx
@@ -36,11 +44,9 @@ Once you are comfortable you know how the sensor works, mount it. Optionally use
 # Test updating
 ## curl --insecure "https://127.0.0.1:10443/json.htm?type=command&param=udevice&idx=24&svalue=1"
 
-### Add script
+### Install worker
 
-See https://gist.github.com/tvwerkhoven/4a11c510621bce0764f55b2438d4ae34
-
-### Run at startup
+Install water_worker.py somewhere
 
 Add 
  @reboot /home/pi/meter_water/water_worker.py
