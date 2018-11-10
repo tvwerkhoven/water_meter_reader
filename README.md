@@ -35,21 +35,23 @@ Run ./read_ldr.py
 
 ### Set up domoticz
 
-# Create dummy hardware, note idx
-# Create virtual water sensor, using JSON
-## curl --insecure "https://127.0.0.1:10443/json.htm?type=createvirtualsensor&idx=<dummy hardware idx>&sensorname=Water&sensortype=113"
-## curl --insecure "https://127.0.0.1:10443/json.htm?type=setused&idx=<id of sensor just created>&name=RFXMeter&switchtype=2&used=true"
-# Edit name of virtual sensor via web interface
-# Update RFX division to 1000 for water in Domoticz setting (if you're updating per liter)
-# Test updating
-## curl --insecure "https://127.0.0.1:10443/json.htm?type=command&param=udevice&idx=24&svalue=1"
+- Create dummy hardware, note idx
+- Create virtual water sensor, using JSON
+-- curl --insecure "https://127.0.0.1:10443/json.htm?type=createvirtualsensor&idx=<dummy hardware idx>&sensorname=Water&sensortype=113"
+-- curl --insecure "https://127.0.0.1:10443/json.htm?type=setused&idx=<id of sensor just created>&name=RFXMeter&switchtype=2&used=true"
+- Edit name of virtual sensor via web interface
+- Update RFX division to 1000 for water in Domoticz setting (if you're updating per liter)
+- Test updating
+-- curl --insecure "https://127.0.0.1:10443/json.htm?type=command&param=udevice&idx=24&svalue=1"
 
 ### Install worker
 
 Install water_worker.py somewhere
 
 Add 
- @reboot /home/pi/meter_water/water_worker.py
+
+    @reboot /home/pi/meter_water/water_worker.py
+
 to crontab
 
 ## Reference
