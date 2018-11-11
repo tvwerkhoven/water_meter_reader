@@ -35,14 +35,22 @@ Run ./read_ldr.py
 
 ### Set up domoticz
 
-- Create dummy hardware, note idx
-- Create virtual water sensor, using JSON
-   - `curl --insecure "https://127.0.0.1:10443/json.htm?type=createvirtualsensor&idx=<dummy hardware idx>&sensorname=Water&sensortype=113"`
-   - `curl --insecure "https://127.0.0.1:10443/json.htm?type=setused&idx=<idx of sensor just created>&name=RFXMeter&switchtype=2&used=true"`
-- Edit name of virtual sensor via web interface
-- Update RFX division to 1000 for water in Domoticz setting (if you're updating per liter)
-- Test updating
-   - `curl --insecure "https://127.0.0.1:10443/json.htm?type=command&param=udevice&idx=<sensor idx>&svalue=1"`
+1. Create dummy hardware, note idx
+2. Create virtual water sensor, using JSON
+   1. `curl --insecure "https://127.0.0.1:10443/json.htm?type=createvirtualsensor&idx=<dummy hardware idx>&sensorname=Water&sensortype=113"`
+   2. `curl --insecure "https://127.0.0.1:10443/json.htm?type=setused&idx=<idx of sensor just created>&name=RFXMeter&switchtype=2&used=true"`
+3. Edit name of virtual sensor via web interface, set current value
+4. Update RFX division to 1000 for water in Domoticz setting (if you're updating per liter)
+5. Test updating
+   1. `curl --insecure "https://127.0.0.1:10443/json.htm?type=command&param=udevice&idx=<sensor idx>&svalue=1"`
+6. Enter domoticz details in script preamble
+
+### Set up influxdb
+
+1. Create database (e.g. 'smarthome')
+2. Enter influxdb details in script preamble
+3. Set current value explicitly in influxdb, the rest will be added
+   1. Call `curl -i -XPOST http://localhost:8086/write?db=smarthometest --data-binary "water,type=potable,device=sensus value=653623"`
 
 ### Install worker
 
