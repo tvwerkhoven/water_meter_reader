@@ -6,7 +6,7 @@
 #
 # Todo:
 # 1. Check what happens if updates are faster than json calls (do these 
-#    queue or not?)
+#    queue or not?) --> JSON calls are quite fast (<<second), probably not a problem
 # 2. Add scheduler that does a NOOP every hour if there is no new data (to 
 #    fill the graph) - https://stackoverflow.com/questions/23512970/how-to-implement-multiple-signals-in-a-program
 #
@@ -17,9 +17,10 @@
 #
 # Known risks:
 # 1. The sensor might falsely trigger when the rotating disk ends exactly in 
-#   the middle of the edge between high and low contrast, causing the sensor #   to give a voltage exactly around the threshold voltage. This is 
+#   the middle of the edge between high and low contrast, causing the sensor
+#   to give a voltage exactly around the threshold voltage. This is 
 #   partially mitigated by having a minimum delay time, but this does not
-#   solve it.
+#   solve it. Problem does not seem very severe
 
 
 # Domoticz settings
@@ -27,6 +28,12 @@ domoticz_water_idx = 23 		# IDX for virtual water sensor
 domoticz_ip = "127.0.0.1"		# IP of domoticz server (127.0.0.1 for localhost = same computer)
 domoticz_protocol = "https"		# Protocol to use (http or https)
 domoticz_port = 10443			# Webserver port of domoticz (either http or https)
+
+influxdb_ip = "127.0.0.1"		# IP of influxdb server (127.0.0.1 for localhost = same computer)
+influxdb_protocol = "http"		# Protocol to use for influxdb (http or https)
+influxdb_port = 8086			# port
+influxdb_db = "smarthome"		# database to use
+influxdb_query = "water,type=potable,device=sensus" # prefix of query, will be appended with ' value =1'
 
 meter_logf = '/tmp/water_worker.log' # log file, or None for no logging to disk
 meter_delay = 0.1				# Minimum delay between counts in seconds 
@@ -58,6 +65,22 @@ def domoticz_update(count):
 	except requests.exceptions.Timeout as e:
 		logging.warn("Update failed due to timeout. Is domoticz running?")
 
+def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="smarthometest", query="water,type=usage,device=sensus"):
+	"""
+	Push value 'increment' to influxdb with second precision, which should 
+	have the value of the amount of water used (e.g. 1 for 1 liter)
+	"""
+
+	# Something like req_url = "http://localhost:8086/write?db=smarthometest&precision=s"
+	req_url = "{}://{}:{}/write?db={}&precision=s".format(prot, ip, port, db)
+	# Something like post_data = "water,type=usage,device=sensus value=1"
+	post_data = "{} value={:f}".format(query,increment)
+	try:
+		httpresponse = requests.post(req_url, data=post_data, verify=False, timeout=5)
+	except requests.exceptions.Timeout as e:
+		logging.warn("Update failed due to timeout. Is influxdb running?")
+
+
 # These functions will be called when there is a line / no line detected.
 # N.B. That 'line' or 'no line' means low or high reflection here.
 def call1():
@@ -68,6 +91,8 @@ def call1():
 		logging.debug("Skipping, update too fast since last")
 		return
 
+	influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
+
 	meter_count_l = meter_count_l + 1
 	domoticz_update(meter_count_l)
 	logging.info("Updated water meter to {}".format(meter_count_l))
@@ -75,6 +100,7 @@ def call1():
 
 def call2():
 	logging.debug("No line detected - {}".format(meter_sensor._queue.queue))
+	influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
 
 
 def domoticz_init(ip, port, meter_idx, prot="http"):
