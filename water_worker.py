@@ -35,11 +35,11 @@ influxdb_port = 8086			# port
 influxdb_db = "smarthome"		# database to use
 influxdb_query = "water,type=potable,device=sensus" # prefix of query, will be appended with ' value =1'
 
-meter_logf = '/tmp/water_worker.log' # log file, or None for no logging to disk
+meter_logf = None #'/tmp/water_worker.log' # log file, or None for no logging to disk
 meter_delay = 0.1				# Minimum delay between counts in seconds 
 								# (low-pass filter for potential sensor 
 								# noise)
-meter_lastupdate = 0		   	# Time at which meter was last updated
+meter_lastupdate = 0		   	# Time at which meter was last updated (seconds since epoch)
 meter_count_l = None			# Initial meter in liter - will be updated 
 								# with meter reading if it exists in domoticz
 meter_offset_l = 0				# Meter offset (if used)
