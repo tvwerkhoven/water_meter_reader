@@ -62,8 +62,9 @@ def domoticz_update(count):
 	# Set timeout, otherwise it will hang forever
 	try:
 		httpresponse = requests.get(req_url, verify=False, timeout=5)
-	except requests.exceptions.Timeout as e:
-		logging.warn("Update failed due to timeout. Is domoticz running?")
+	except requests.exceptions.Timeout as inst:
+        logging.warn("Could not update meter reading in domoticz due to timeout: {}, failing".format(inst))
+		raise
 
 def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="smarthometest", query="water,type=usage,device=sensus"):
 	"""
@@ -77,9 +78,9 @@ def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="sma
 	post_data = "{} value={:f}".format(query,increment)
 	try:
 		httpresponse = requests.post(req_url, data=post_data, verify=False, timeout=5)
-	except requests.exceptions.Timeout as e:
-		logging.warn("Update failed due to timeout. Is influxdb running?")
-
+	except requests.exceptions.Timeout as inst:
+        logging.warn("Could not update meter reading in influxdb due to timeout: {}, failing".format(inst))
+		raise
 
 # These functions will be called when there is a line / no line detected.
 # N.B. That 'line' or 'no line' means low or high reflection here.
@@ -91,17 +92,26 @@ def call1():
 		logging.debug("Skipping, update too fast since last")
 		return
 
-	influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
+	try:
+		influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
+	except:
+		logging.warn("Failed to update influxdb")
 
 	meter_count_l = meter_count_l + 1
-	domoticz_update(meter_count_l)
+	try:
+		domoticz_update(meter_count_l)
+	except:
+		logging.warn("Failed to update domoticz")
+
 	logging.info("Updated water meter to {}".format(meter_count_l))
 	meter_lastupdate = now
 
 def call2():
 	logging.debug("No line detected - {}".format(meter_sensor._queue.queue))
-	influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
-
+	try:
+		influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
+	except:
+		logging.warn("Failed to update influxdb")
 
 def domoticz_init(ip, port, meter_idx, prot="http"):
 	# Get current water meter reading from domoticz, return meter_count_l
