@@ -63,7 +63,7 @@ def domoticz_update(count):
 	try:
 		httpresponse = requests.get(req_url, verify=False, timeout=5)
 	except requests.exceptions.Timeout as inst:
-        logging.warn("Could not update meter reading in domoticz due to timeout: {}, failing".format(inst))
+		logging.warn("Could not update meter reading in domoticz due to timeout: {}, failing".format(inst))
 		raise
 
 def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="smarthometest", query="water,type=usage,device=sensus"):
@@ -79,7 +79,7 @@ def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="sma
 	try:
 		httpresponse = requests.post(req_url, data=post_data, verify=False, timeout=5)
 	except requests.exceptions.Timeout as inst:
-        logging.warn("Could not update meter reading in influxdb due to timeout: {}, failing".format(inst))
+		logging.warn("Could not update meter reading in influxdb due to timeout: {}, failing".format(inst))
 		raise
 
 # These functions will be called when there is a line / no line detected.
