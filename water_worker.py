@@ -33,7 +33,7 @@ influxdb_ip = "127.0.0.1"		# IP of influxdb server (127.0.0.1 for localhost = sa
 influxdb_protocol = "http"		# Protocol to use for influxdb (http or https)
 influxdb_port = 8086			# port
 influxdb_db = "smarthome"		# database to use
-influxdb_query = "water,type=potable,device=sensus" # prefix of query, will be appended with ' value =1'
+influxdb_query = "waterv2 sensus=" # prefix of query, will be appended with ' value =1'
 
 meter_logf = None #'/tmp/water_worker.log' # log file, or None for no logging to disk
 meter_delay = 0.1				# Minimum delay between counts in seconds 
@@ -75,7 +75,7 @@ def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="sma
 	# Something like req_url = "http://localhost:8086/write?db=smarthometest&precision=s"
 	req_url = "{}://{}:{}/write?db={}&precision=s".format(prot, ip, port, db)
 	# Something like post_data = "water,type=usage,device=sensus value=1"
-	post_data = "{} value={:f}".format(query,increment)
+	post_data = "{}{:f}".format(query,increment)
 	try:
 		httpresponse = requests.post(req_url, data=post_data, verify=False, timeout=5)
 	except requests.exceptions.Timeout as inst:
