@@ -33,7 +33,7 @@ influxdb_ip = "127.0.0.1"		# IP of influxdb server (127.0.0.1 for localhost = sa
 influxdb_protocol = "http"		# Protocol to use for influxdb (http or https)
 influxdb_port = 8086			# port
 influxdb_db = "smarthome"		# database to use
-influxdb_query = "waterv2 sensus=" # prefix of query, will be appended with ' value =1'
+influxdb_query = "waterv2 sensus=" # prefix of query, will be appended with value
 
 meter_logf = None #'/tmp/water_worker.log' # log file, or None for no logging to disk
 meter_delay = 0.1				# Minimum delay between counts in seconds 
@@ -62,9 +62,8 @@ def domoticz_update(count):
 	# Set timeout, otherwise it will hang forever
 	try:
 		httpresponse = requests.get(req_url, verify=False, timeout=5)
-	except requests.exceptions.Timeout as inst:
-		logging.warn("Could not update meter reading in domoticz due to timeout: {}, failing".format(inst))
-		raise
+	except Exception as inst:
+		logging.warn("Could not update meter reading in domoticz: {}, failing".format(inst))
 
 def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="smarthometest", query="water,type=usage,device=sensus"):
 	"""
@@ -78,9 +77,8 @@ def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="sma
 	post_data = "{}{:f}".format(query,increment)
 	try:
 		httpresponse = requests.post(req_url, data=post_data, verify=False, timeout=5)
-	except requests.exceptions.Timeout as inst:
-		logging.warn("Could not update meter reading in influxdb due to timeout: {}, failing".format(inst))
-		raise
+	except Exception as inst:
+		logging.warn("Could not update meter reading in influxdb: {}, failing".format(inst))
 
 # These functions will be called when there is a line / no line detected.
 # N.B. That 'line' or 'no line' means low or high reflection here.
@@ -128,11 +126,12 @@ def domoticz_init(ip, port, meter_idx, prot="http"):
 			resp = requests.get(req_url, verify=False, timeout=5)
 			break
 		except:
-			logging.warn("Could not get current meter reading. Will retry in 10sec. ({}/{})".format(i, 10))
-			time.sleep(10)
-			if (i == 9):
-				logging.warn("Could not get current meter reading. Failing.")
-				raise
+			if (i < 9):
+				logging.warn("Could not get current meter reading, retrying... ({}/{})".format(i, 10))
+				time.sleep(5)
+			else:
+				logging.error("Could not get current meter reading, using 0 instead.")
+				return 0
 
 	# Get meter offset, given as float
 	meter_offset_str = resp.json()['result'][0]['AddjValue'] # like '13.456'
