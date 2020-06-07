@@ -25,6 +25,20 @@ influxdb_port = 8086			# port
 influxdb_db = "smarthomev3"		# database to use
 influxdb_query = "waterv3,quantity=potable,source=sensus value=" # prefix of query, will be appended with value
 
+mqtt_ip = "172.16.0.2"
+mqtt_port = 1883
+mqtt_user = "watermeter"
+mqtt_passwd = "yourpasswd"
+mqtt_topic = "influx/test/quantity/potable/source/sensus/value/state"
+
+import paho.mqtt.client as paho
+
+client1 = paho.Client(client_id="heat_meter")
+client1.username_pw_set(mqtt_user, mqtt_passwd)
+client1.connect(mqtt_ip, mqtt_port)
+
+ret = client1.publish("influx/test/quantity/water/source/sensus/value", 1)
+
 meter_logf = None #'/tmp/water_worker.log' # log file, or None for no logging to disk
 meter_delay = 0.01				# Minimum delay between counts in seconds 
 								# (low-pass filter for potential sensor 
@@ -58,6 +72,28 @@ def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="sma
 	except Exception as inst:
 		logging.warn("Could not update meter reading in influxdb: {}, failing".format(inst))
 
+def mqtt_update(payload, topic):
+    """
+    Publish to mqtt
+
+    http://www.steves-internet-guide.com/publishing-messages-mqtt-client/
+    https://pypi.org/project/paho-mqtt/#publishing
+    """
+
+    client1 = paho.Client(client_id="heat_meter")
+    client1.username_pw_set(mqtt_user, mqtt_passwd)
+
+    try:
+        client1.connect(mqtt_ip, mqtt_port)
+    except:
+        logging.exception('Could not connect to mqtt broker')
+
+    try:
+        ret = client1.publish(topic, payload)
+    except:
+        logging.exception('Could not publish mqtt value')
+
+
 # These functions will be called when there is a line / no line detected.
 # N.B. That 'line' or 'no line' means low or high reflection here.
 def update():
@@ -67,7 +103,8 @@ def update():
 		logging.debug("Skipping, update too fast since last")
 		return
 	try:
-		influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
+		# influxdb_update(0.5, influxdb_protocol, influxdb_ip, influxdb_port, influxdb_db, influxdb_query)
+		mqtt_update(0.5, mqtt_topic)
 	except:
 		logging.warn("Failed to update influxdb")
 
