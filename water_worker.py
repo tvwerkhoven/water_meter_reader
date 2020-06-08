@@ -31,13 +31,6 @@ mqtt_user = "watermeter"
 mqtt_passwd = "yourpasswd"
 mqtt_topic = "influx/test/quantity/potable/source/sensus/value/state"
 
-import paho.mqtt.client as paho
-
-client1 = paho.Client(client_id="heat_meter")
-client1.username_pw_set(mqtt_user, mqtt_passwd)
-client1.connect(mqtt_ip, mqtt_port)
-
-ret = client1.publish("influx/test/quantity/water/source/sensus/value", 1)
 
 meter_logf = None #'/tmp/water_worker.log' # log file, or None for no logging to disk
 meter_delay = 0.01				# Minimum delay between counts in seconds 
@@ -56,6 +49,7 @@ import os
 from gpiozero import LineSensor
 from signal import pause
 import requests
+import paho.mqtt.publish
 
 def influxdb_update(increment, prot='http', ip='127.0.0.1', port='8086', db="smarthometest", query="water,type=usage,device=sensus"):
 	"""
@@ -80,18 +74,12 @@ def mqtt_update(payload, topic):
     https://pypi.org/project/paho-mqtt/#publishing
     """
 
-    client1 = paho.Client(client_id="heat_meter")
-    client1.username_pw_set(mqtt_user, mqtt_passwd)
-
     try:
-        client1.connect(mqtt_ip, mqtt_port)
+        paho.mqtt.publish.single(topic, payload, qos=0, retain=False, \
+        	hostname=mqtt_ip, port=mqtt_port, client_id="heat_meter", \
+        	auth={'username': mqtt_user, 'password': mqtt_passwd})
     except:
-        logging.exception('Could not connect to mqtt broker')
-
-    try:
-        ret = client1.publish(topic, payload)
-    except:
-        logging.exception('Could not publish mqtt value')
+        logging.exception('Could not publish single to mqtt broker')
 
 
 # These functions will be called when there is a line / no line detected.
